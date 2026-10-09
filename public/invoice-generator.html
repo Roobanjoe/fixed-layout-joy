@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Invoice Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--ac:#059669;--ink:#1e293b;--mut:#94a3b8;--line:#e2e8f0;--bg:#f8fafc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a}}
+:root[data-theme="dark"]{--bg:#0f172a}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);font:13px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink)}
+.top{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px;background:#fff;border-bottom:1px solid var(--line)}
+button,select{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;padding:7px 11px;cursor:pointer}
+.top .sp{background:var(--ac);color:#fff;border-color:var(--ac)}
+#sheet{max-width:794px;margin:22px auto;background:#fff;color:var(--ink);border-radius:14px;padding:30px;box-shadow:0 4px 24px #0f172a22}
+input,textarea{font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:1px solid transparent;border-radius:3px;padding:3px 2px;width:100%;min-width:0}
+input:hover,textarea:hover{border-bottom-color:var(--line)}input:focus,textarea:focus{outline:0;border-bottom-color:var(--ac)}
+textarea{resize:none;display:block;overflow:hidden}
+input[type=number]::-webkit-inner-spin-button{display:none}input[type=number]{-moz-appearance:textfield}
+.hd{display:flex;justify-content:space-between;gap:16px}
+.logo{width:100px;height:78px;flex:none;border:1.5px dashed #cbd5e1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;overflow:hidden;font-size:9px;font-weight:600;color:#64748b;background:#f8fafc}
+.logo img{max-width:100%;max-height:100%}
+.co{flex:1;text-align:right}.co input,.co textarea{text-align:right}
+#bn{font-size:20px;font-weight:800;color:#9ca3af}#ba{font-size:10.5px;color:#94a3b8;line-height:1.9}
+.mid{display:flex;justify-content:space-between;gap:16px;margin-top:34px}
+.mid>div{flex:1;min-width:0}
+.lab{font-size:9px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+#cn{font-size:14px;font-weight:700;color:#9ca3af}#cc,#ct{font-size:10.5px;color:#94a3b8}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;font-size:10.5px;color:#64748b}
+.kv span{white-space:nowrap}.kv input{width:auto;max-width:112px;text-align:right;font-size:10.5px;font-weight:700;color:var(--ink)}
+.tbl{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:26px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:480px}
+th{background:var(--ac);color:#fff;font-size:8.5px;font-weight:700;text-transform:uppercase;padding:9px 8px;text-align:center}
+th:first-child{text-align:left;padding-left:12px}
+td{padding:9px 6px;border-bottom:1px solid var(--line);font-size:10.5px;text-align:center}
+td:first-child{text-align:left;padding-left:10px}td.t{font-weight:600;white-space:nowrap}td input{text-align:center;font-size:10.5px}td:first-child input{text-align:left}
+.del{border:0;background:none;color:#ef4444;padding:2px 6px;font-size:13px}
+.addb{display:block;width:100%;margin-top:12px;padding:10px;border:1.5px dashed #cbd5e1;border-radius:8px;background:#f8fafc;color:var(--ac);font-size:10.5px}
+.bt{display:flex;gap:18px;margin-top:22px;align-items:flex-start}.bt>div{flex:1;min-width:0}
+.pay{border:1px solid var(--line);border-radius:8px;padding:14px}
+.pay b{font-size:11.5px;display:block;margin-bottom:10px}.pay select{width:100%;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:5px 0;margin-bottom:10px}
+.pay .kv{margin-bottom:6px}.pay .kv input{max-width:none;flex:1;text-align:left;font-weight:500;color:#64748b}
+.tot .kv{color:#64748b;font-size:10.5px}.tot .kv b{color:var(--ink)}
+.tot input.n{width:44px;max-width:44px;text-align:center;border:1px solid var(--line);border-radius:4px;padding:4px;background:#fff}
+.g{background:var(--ac);color:#fff;border-radius:6px;padding:11px 12px;display:flex;justify-content:space-between;font-weight:800;font-size:11.5px;margin:8px 0}
+.due{background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:6px;padding:9px 12px;display:flex;justify-content:space-between;font-weight:800;font-size:10.5px;margin-top:8px}
+.sigw{display:flex;justify-content:flex-end;margin-top:30px}
+.sigb{width:150px;text-align:center}
+.sig{height:44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;cursor:pointer;font-size:8.5px;color:#94a3b8;overflow:hidden}
+.sig img{max-height:44px;max-width:100%}
+.sigb hr{border:0;border-top:1.5px solid #0f172a;margin:4px 0 6px}.sigb b{font-size:10px}
+.ft{display:flex;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:26px;padding-top:16px;font-size:10px;color:#64748b;align-items:center}
+.ft label{display:flex;gap:6px;align-items:center;flex:1;min-width:130px}.ft .i{color:var(--ac)}.ft input{font-size:10px;color:#64748b}
+.acts{display:flex;gap:8px;max-width:794px;margin:0 auto 30px;padding:0 12px}
+.acts button{flex:1;color:#fff;border:0;padding:12px 6px;font-size:10.5px;border-radius:6px}
+#hist{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:12px;z-index:9}
+#hist .box{background:#fff;border-radius:12px;max-width:620px;width:100%;max-height:85vh;overflow:auto;padding:16px}
+.hi{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:8px 0}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#0f172a;color:#fff;padding:8px 16px;border-radius:20px;display:none;z-index:10}
+body.cap .del,body.cap .addb,body.cap .logo:not(:has(img)),body.cap .sig:not(:has(img)) span{display:none!important}
+@media print{body{background:#fff}.top,.acts,#hist,#toast,.del,.addb,.logo:not(:has(img)),.sig:not(:has(img)) span{display:none!important}#sheet{box-shadow:none;margin:0;max-width:none;border-radius:0;padding:0}.pay select{appearance:none}@page{size:A4;margin:12mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="top"><button class="sp" id="prof">💾 Save Profile</button>
+<select id="cur"></select>
+<select id="theme"><option value="#059669">🟢 Green Theme</option><option value="#2563eb">🔵 Blue Theme</option><option value="#b8860b">🟤 Gold Theme</option><option value="#dc2626">🔴 Red Theme</option><option value="#7c3aed">🟣 Purple Theme</option><option value="#111827">⚫ Black Theme</option></select>
+<button id="hbtn">🕘 History</button></div>
+
+<div id="sheet">
+<div class="hd"><label class="logo" id="lg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M7 18a5 5 0 0 1-.5-9.9A6 6 0 0 1 18 9a4.5 4.5 0 0 1-1 9M12 12v8M9 15l3-3 3 3"/></svg>Upload Logo</label><input type="file" id="lgf" accept="image/*" hidden>
+<div class="co"><input id="bn" placeholder="Your Business Name"><textarea id="ba" rows="3" placeholder="Address"></textarea></div></div>
+
+<div class="mid"><div><div class="lab">👤 Billed To:</div><input id="cn" placeholder="Client Name (e.g. John Doe)"><textarea id="cc" rows="1" placeholder="Client Company / Address"></textarea><input id="ct" placeholder="Contact Number"></div>
+<div><div class="kv"><span>＃ Invoice #:</span><input id="no"></div><div class="kv"><span>📅 Issue Date:</span><input type="date" id="d1"></div><div class="kv"><span>📅 Due Date:</span><input type="date" id="d2"></div></div></div>
+
+<div class="tbl tw"><table><thead><tr><th>Item Description</th><th style="width:70px">Qty /<br>Hrs</th><th style="width:90px">Rate/Price</th><th style="width:100px">Total<br>Amount</th><th style="width:34px"></th></tr></thead><tbody id="rows"></tbody></table></div>
+<button class="addb" id="add">⊕ Add New Item</button>
+
+<div class="bt"><div class="pay"><b>🏛 Payment Instructions</b>
+<select id="pm"><option>Bank Transfer</option><option>UPI / Google Pay</option><option>Cash / Cheque</option></select>
+<div id="pbank"><div class="kv"><span>Bank:</span><input id="bk"></div><div class="kv"><span>A/C No:</span><input id="ac"></div><div class="kv"><span>IFSC:</span><input id="if"></div></div>
+<div id="pupi" style="display:none"><div class="kv"><span>UPI ID:</span><input id="up"></div></div>
+<div id="pcash" style="display:none"><div class="kv"><span>Payable to:</span><input id="pt"></div></div></div>
+<div class="tot">
+<div class="kv"><span>Sub Total:</span><b id="sub"></b></div>
+<div class="kv"><span>Tax (GST %):</span><span style="display:flex;gap:8px;align-items:center"><input class="n" id="tx" type="number" min="0" value="0"><b id="txa" style="min-width:48px;text-align:right"></b></span></div>
+<div class="kv"><span>Discount (%):</span><span style="display:flex;gap:8px;align-items:center"><input class="n" id="ds" type="number" min="0" value="0"><b id="dsa" style="min-width:48px;text-align:right;color:var(--ac)"></b></span></div>
+<div class="g"><span>GRAND TOTAL:</span><span id="gt"></span></div>
+<div class="kv"><span>Amount Paid:</span><input class="n" id="pd" type="number" min="0" value="0" style="width:84px;max-width:84px;text-align:center;border:1px solid var(--line);border-radius:4px;padding:4px;background:#fff"></div>
+<div class="due"><span>Balance Due:</span><span id="bd"></span></div></div></div>
+
+<div class="sigw"><div class="sigb"><label class="sig" id="sg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M12 20h9M16.5 3.5l4 4L8 20l-5 1 1-5z"/></svg><span>Upload Signature</span></label><input type="file" id="sgf" accept="image/*" hidden><hr><b>Authorized Signatory</b></div></div>
+
+<div class="ft"><label><span class="i">📞</span><input id="fp"></label><label><span class="i">✉️</span><input id="fe"></label><label><span class="i">📍</span><input id="fl"></label></div>
+</div>
+
+<div class="acts"><button id="save" style="background:#1e293b">💾 Save Invoice</button><button id="pdf" style="background:var(--ac)">📄 Download PDF / Print</button><button id="wa" style="background:#10b981">💬 Send on WhatsApp</button><button id="new" style="background:#64748b">＋ Create New</button></div>
+
+<div id="hist"><div class="box"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Invoice History</h3><button id="hx">×</button></div>
+<button id="xl" style="margin:10px 0">Export All to Excel</button><div id="hl"></div></div></div>
+<div id="toast"></div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var SY={INR:"₹",USD:"$",EUR:"€",GBP:"£",JPY:"¥"};
+["INR","USD","EUR","GBP","AED","SAR","JPY","CAD","AUD","BDT","PKR","ZAR","SEK","CHF","CNY","HKD","SGD","MYR","THB","IDR","PHP","VND","KWD","OMR","BHD"].forEach(function(c){var o=document.createElement("option");o.value=c;o.textContent=(SY[c]?SY[c]+" ":"")+c;$("cur").appendChild(o)});
+var store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast("Storage unavailable");return false}}};
+var logo="",sig="",editId=null;
+var PF=["bn","ba","bk","ac","if","up","pt","fp","fe","fl"],IF=["no","d1","d2","cn","cc","ct","tx","ds","pd"];
+var SAMPLE={bn:"Acme Corporation Ltd.",ba:"123 Business Avenue, Tech Park\nMumbai, Maharashtra 400001\nPh: +91 98765 43210",bk:"State Bank of India",ac:"0000123456789",if:"SBIN0001234",fp:"+91 98765 43210",fe:"billing@acmecorp.com",fl:"Mumbai, India"};
+function toast(m){var t=$("toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none"},1800)}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
+async function saveFile(name,data){var d=null;try{if(window.claude&&claude.use)d=await claude.use("downloads")}catch(e){}if(!d)return false;try{await d.save({filename:name,data:data});toast("File saved")}catch(e){if(!e||e.code!="declined")toast("Download failed")}return true}
+function sy(){var c=$("cur").value;return SY[c]||c}
+function money(n){return sy()+" "+n.toFixed(2)}
+function num(v){var n=parseFloat(v);return isNaN(n)?0:n}
+function grow(t){t.style.height="auto";t.style.height=t.scrollHeight+"px"}
+document.querySelectorAll("textarea").forEach(function(t){t.addEventListener("input",function(){grow(t)})});
+function addRow(d,q,r){var tr=document.createElement("tr");
+tr.innerHTML='<td><input class="d" placeholder="Item description" value="'+esc(d||"")+'"></td><td><input class="q" type="number" min="0" value="'+(q==null?1:q)+'"></td><td><input class="r" type="number" min="0" value="'+(r||0)+'"></td><td class="t"></td><td><button class="del" title="Remove">🗑</button></td>';
+tr.querySelector(".del").onclick=function(){tr.remove();calc()};
+tr.querySelectorAll("input").forEach(function(i){i.oninput=calc});$("rows").appendChild(tr);calc()}
+function calc(){var s=0;document.querySelectorAll("#rows tr").forEach(function(tr){var t=num(tr.querySelector(".q").value)*num(tr.querySelector(".r").value);tr.querySelector(".t").textContent=money(t);s+=t});
+var tx=s*num($("tx").value)/100,ds=s*num($("ds").value)/100,g=s+tx-ds,b=g-num($("pd").value);
+$("sub").textContent=money(s);$("txa").textContent="+ "+money(tx);$("dsa").textContent="- "+money(ds);$("gt").textContent=money(g);$("bd").textContent=money(b);return{s:s,g:g,b:b}}
+["tx","ds","pd"].forEach(function(i){$(i).oninput=calc});
+$("cur").onchange=calc;
+function theme(){document.documentElement.style.setProperty("--ac",$("theme").value)}
+$("theme").onchange=theme;
+function pay(){var v=$("pm").value;$("pbank").style.display=v=="Bank Transfer"?"":"none";$("pupi").style.display=v.indexOf("UPI")==0?"":"none";$("pcash").style.display=v.indexOf("Cash")==0?"":"none"}
+$("pm").onchange=pay;
+function pick(inp,box,ph,set){inp.onchange=function(){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){set(r.result);show(box,r.result,ph)};r.readAsDataURL(f)}}
+function show(box,src,ph){if(src)box.innerHTML='<img src="'+src+'">';else box.innerHTML=ph}
+var LG=$("lg").innerHTML,SG=$("sg").innerHTML;
+$("lg").onclick=function(e){e.preventDefault();$("lgf").click()};$("sg").onclick=function(e){e.preventDefault();$("sgf").click()};
+pick($("lgf"),$("lg"),LG,function(v){logo=v});pick($("sgf"),$("sg"),SG,function(v){sig=v});
+function growAll(){document.querySelectorAll("textarea").forEach(grow)}
+function today(){return new Date().toISOString().slice(0,10)}
+function nextNo(){return "INV-"+String(store.get("inv_hist",[]).length+1).padStart(3,"0")}
+function reset(){editId=null;["cn","cc","ct","tx","ds","pd"].forEach(function(i){$(i).value=""});$("tx").value=0;$("ds").value=0;$("pd").value=0;$("rows").innerHTML="";addRow("Website Development",1,15000);$("no").value=nextNo();$("d1").value=today();$("d2").value="";calc();growAll()}
+function profile(){var p=store.get("inv_prof",null)||Object.assign({cur:"INR",theme:"#059669",pm:"Bank Transfer"},SAMPLE);
+PF.forEach(function(i){$(i).value=p[i]||""});$("cur").value=p.cur||"INR";$("theme").value=p.theme||"#059669";$("pm").value=p.pm||"Bank Transfer";logo=p.logo||"";sig=p.sig||"";show($("lg"),logo,LG);show($("sg"),sig,SG);theme();pay()}
+$("prof").onclick=function(){var p={cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig};PF.forEach(function(i){p[i]=$(i).value});if(store.set("inv_prof",p))toast("Profile saved")};
+function snap(){var it=[];document.querySelectorAll("#rows tr").forEach(function(tr){it.push({d:tr.querySelector(".d").value,q:num(tr.querySelector(".q").value),r:num(tr.querySelector(".r").value)})});
+var o={id:editId||String(Date.now()),cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig,items:it,total:calc().g};PF.concat(IF).forEach(function(i){o[i]=$(i).value});return o}
+function load(o){editId=o.id;PF.concat(IF).forEach(function(i){$(i).value=o[i]||""});$("cur").value=o.cur;$("theme").value=o.theme;$("pm").value=o.pm;logo=o.logo||"";sig=o.sig||"";show($("lg"),logo,LG);show($("sg"),sig,SG);$("rows").innerHTML="";o.items.forEach(function(i){addRow(i.d,i.q,i.r)});theme();pay();calc();growAll()}
+$("add").onclick=function(){addRow("",1,0)};
+$("save").onclick=function(){var o=snap(),h=store.get("inv_hist",[]),i=h.findIndex(function(x){return x.id==o.id});if(i>=0)h[i]=o;else{h.unshift(o);editId=o.id}if(store.set("inv_hist",h))toast("Invoice saved")};
+$("new").onclick=reset;
+$("pdf").onclick=async function(){var name=($("no").value||"invoice")+".pdf";
+try{toast("Preparing PDF...");
+var cv=await html2canvas($("sheet"),{scale:2,backgroundColor:"#ffffff",useCORS:true,onclone:function(doc){doc.body.classList.add("cap")}});
+var J=window.jspdf.jsPDF,pdf=new J({unit:"pt",format:"a4"}),W=pdf.internal.pageSize.getWidth(),H=pdf.internal.pageSize.getHeight(),m=24,w=W-2*m,h=cv.height*w/cv.width;
+if(h>H-2*m){h=H-2*m;w=cv.width*h/cv.height}
+pdf.addImage(cv.toDataURL("image/jpeg",0.95),"JPEG",(W-w)/2,m,w,h);
+if(!(await saveFile(name,pdf.output("blob")))){document.title=$("no").value||"Invoice";window.print()}
+}catch(e){toast("PDF failed, trying print");try{window.print()}catch(x){}}};
+$("wa").onclick=function(){var c=calc(),m="*Invoice "+$("no").value+"*\nFrom: "+$("bn").value+"\nTo: "+$("cn").value+"\nDate: "+$("d1").value+($("d2").value?"\nDue: "+$("d2").value:"")+"\nTotal: "+money(c.g)+"\nBalance Due: "+money(c.b);
+if($("pm").value.indexOf("UPI")==0&&$("up").value)m+="\nUPI: "+$("up").value;window.open("https://wa.me/?text="+encodeURIComponent(m),"_blank")};
+function hist(){var h=store.get("inv_hist",[]),l=$("hl");l.innerHTML=h.length?"":"<p>No saved invoices yet.</p>";
+h.forEach(function(o){var d=document.createElement("div");d.className="hi";d.innerHTML="<span><b>"+esc(o.no||"-")+"</b> · "+esc(o.cn||"")+"<br><small>"+esc(o.d1)+" · "+esc(o.cur)+" "+o.total.toFixed(2)+"</small></span><span><button>Load</button> <button>Delete</button></span>";
+var b=d.querySelectorAll("button");b[0].onclick=function(){load(o);$("hist").style.display="none"};b[1].onclick=function(){store.set("inv_hist",store.get("inv_hist",[]).filter(function(x){return x.id!=o.id}));hist()};l.appendChild(d)})}
+$("hbtn").onclick=function(){hist();$("hist").style.display="flex"};$("hx").onclick=function(){$("hist").style.display="none"};
+$("xl").onclick=function(){var h=store.get("inv_hist",[]),rows=[];if(!h.length){toast("Nothing to export");return}
+h.forEach(function(o){o.items.forEach(function(i){rows.push({Invoice:o.no,Issued:o.d1,Due:o.d2,Client:o.cn,Currency:o.cur,Item:i.d,Qty:i.q,Rate:i.r,Amount:i.q*i.r,"Tax %":o.tx,"Discount %":o.ds,"Grand Total":o.total,Paid:o.pd})})});
+if(!window.XLSX){toast("Excel library failed to load");return}
+(async function(){try{var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"Invoices");var buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});if(!(await saveFile("invoices.xlsx",buf)))XLSX.writeFile(wb,"invoices.xlsx")}catch(e){toast("Excel export failed")}})()};
+profile();reset();
+</script></body></html>
