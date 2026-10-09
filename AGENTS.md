@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Serve the uploaded invoice source in a full-viewport iframe on the index route to preserve its original layout and isolate its styles and scripts.
+- Keep the embedded invoice UI as the source of truth for document rendering; use a typed postMessage bridge to the host for account sign-in and Cloud-backed records so auth and persistence stay outside the legacy iframe.
