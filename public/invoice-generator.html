@@ -21,6 +21,10 @@ input:hover,textarea:hover{border-bottom-color:var(--line)}input:focus,textarea:
 textarea{resize:none;display:block;overflow:hidden}
 input[type=number]::-webkit-inner-spin-button{display:none}input[type=number]{-moz-appearance:textfield}
 .hd{display:flex;justify-content:space-between;gap:16px}
+.letterpad-body{display:none;min-height:390px;margin-top:34px}
+.letterpad-body textarea{min-height:390px;border:0;padding:8px 2px;font-size:13px;line-height:1.8}
+body[data-doc-mode="letterpad"] .mid,body[data-doc-mode="letterpad"] .tbl,body[data-doc-mode="letterpad"] #add,body[data-doc-mode="letterpad"] .bt,body[data-doc-mode="letterpad"] .sigw{display:none}
+body[data-doc-mode="letterpad"] .letterpad-body{display:block}
 .logo{width:100px;height:78px;flex:none;border:1.5px dashed #cbd5e1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;overflow:hidden;font-size:9px;font-weight:600;color:#64748b;background:#f8fafc}
 .logo img{max-width:100%;max-height:100%}
 .co{flex:1;text-align:right}.co input,.co textarea{text-align:right}
@@ -72,8 +76,10 @@ body.cap .del,body.cap .addb,body.cap .logo:not(:has(img)),body.cap .sig:not(:ha
 <div class="hd"><label class="logo" id="lg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M7 18a5 5 0 0 1-.5-9.9A6 6 0 0 1 18 9a4.5 4.5 0 0 1-1 9M12 12v8M9 15l3-3 3 3"/></svg>Upload Logo</label><input type="file" id="lgf" accept="image/*" hidden>
 <div class="co"><input id="bn" placeholder="Your Business Name"><textarea id="ba" rows="3" placeholder="Address"></textarea></div></div>
 
+<div class="letterpad-body"><textarea id="letterText" placeholder="Write your letter..."></textarea></div>
+
 <div class="mid"><div><div class="lab">👤 Billed To:</div><input id="cn" placeholder="Client Name (e.g. John Doe)"><textarea id="cc" rows="1" placeholder="Client Company / Address"></textarea><input id="ct" placeholder="Contact Number"></div>
-<div><div class="kv"><span>＃ Invoice #:</span><input id="no"></div><div class="kv"><span>📅 Issue Date:</span><input type="date" id="d1"></div><div class="kv"><span>📅 Due Date:</span><input type="date" id="d2"></div></div></div>
+<div><div class="kv"><span id="doc-number-label">＃ Invoice #:</span><input id="no"></div><div class="kv"><span>📅 Issue Date:</span><input type="date" id="d1"></div><div class="kv"><span>📅 Due Date:</span><input type="date" id="d2"></div></div></div>
 
 <div class="tbl tw"><table><thead><tr><th>Item Description</th><th style="width:70px">Qty /<br>Hrs</th><th style="width:90px">Rate/Price</th><th style="width:100px">Total<br>Amount</th><th style="width:34px"></th></tr></thead><tbody id="rows"></tbody></table></div>
 <button class="addb" id="add">⊕ Add New Item</button>
@@ -107,7 +113,8 @@ var $=function(i){return document.getElementById(i)};
 var SY={INR:"₹",USD:"$",EUR:"€",GBP:"£",JPY:"¥"};
 ["INR","USD","EUR","GBP","AED","SAR","JPY","CAD","AUD","BDT","PKR","ZAR","SEK","CHF","CNY","HKD","SGD","MYR","THB","IDR","PHP","VND","KWD","OMR","BHD"].forEach(function(c){var o=document.createElement("option");o.value=c;o.textContent=(SY[c]?SY[c]+" ":"")+c;$("cur").appendChild(o)});
 var store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast("Storage unavailable");return false}}};
-var logo="",sig="",editId=null;
+var logo="",sig="",editId=null,docMode="invoice",docFont="Inter, sans-serif";
+var FONT_MAP={"Arial, sans-serif":"Arial, sans-serif","Inter, sans-serif":"Inter, sans-serif","Helvetica, sans-serif":"Helvetica, sans-serif","Georgia, serif":"Georgia, serif","'Times New Roman', serif":"'Times New Roman', serif","'Courier New', monospace":"'Courier New', monospace","'Trebuchet MS', sans-serif":"'Trebuchet MS', sans-serif","Verdana, sans-serif":"Verdana, sans-serif","Garamond, serif":"Garamond, serif","'Palatino Linotype', serif":"'Palatino Linotype', serif"};
 var PF=["bn","ba","bk","ac","if","up","pt","fp","fe","fl"],IF=["no","d1","d2","cn","cc","ct","tx","ds","pd"];
 var SAMPLE={bn:"Acme Corporation Ltd.",ba:"123 Business Avenue, Tech Park\nMumbai, Maharashtra 400001\nPh: +91 98765 43210",bk:"State Bank of India",ac:"0000123456789",if:"SBIN0001234",fp:"+91 98765 43210",fe:"billing@acmecorp.com",fl:"Mumbai, India"};
 function toast(m){var t=$("toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none"},1800)}
@@ -138,16 +145,16 @@ $("lg").onclick=function(e){e.preventDefault();$("lgf").click()};$("sg").onclick
 pick($("lgf"),$("lg"),LG,function(v){logo=v});pick($("sgf"),$("sg"),SG,function(v){sig=v});
 function growAll(){document.querySelectorAll("textarea").forEach(grow)}
 function today(){return new Date().toISOString().slice(0,10)}
-function nextNo(){return "INV-"+String(store.get("inv_hist",[]).length+1).padStart(3,"0")}
+function nextNo(){return (docMode==="quote"?"QUO-":"INV-")+String(store.get("inv_hist",[]).length+1).padStart(3,"0")}
 function reset(){editId=null;["cn","cc","ct","tx","ds","pd"].forEach(function(i){$(i).value=""});$("tx").value=0;$("ds").value=0;$("pd").value=0;$("rows").innerHTML="";addRow("Website Development",1,15000);$("no").value=nextNo();$("d1").value=today();$("d2").value="";calc();growAll()}
 function profile(){var p=store.get("inv_prof",null)||Object.assign({cur:"INR",theme:"#059669",pm:"Bank Transfer"},SAMPLE);
 PF.forEach(function(i){$(i).value=p[i]||""});$("cur").value=p.cur||"INR";$("theme").value=p.theme||"#059669";$("pm").value=p.pm||"Bank Transfer";logo=p.logo||"";sig=p.sig||"";show($("lg"),logo,LG);show($("sg"),sig,SG);theme();pay()}
 $("prof").onclick=function(){var p={cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig};PF.forEach(function(i){p[i]=$(i).value});if(store.set("inv_prof",p))toast("Profile saved")};
 function snap(){var it=[];document.querySelectorAll("#rows tr").forEach(function(tr){it.push({d:tr.querySelector(".d").value,q:num(tr.querySelector(".q").value),r:num(tr.querySelector(".r").value)})});
-var o={id:editId||String(Date.now()),cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig,items:it,total:calc().g};PF.concat(IF).forEach(function(i){o[i]=$(i).value});return o}
-function load(o){editId=o.id;PF.concat(IF).forEach(function(i){$(i).value=o[i]||""});$("cur").value=o.cur;$("theme").value=o.theme;$("pm").value=o.pm;logo=o.logo||"";sig=o.sig||"";show($("lg"),logo,LG);show($("sg"),sig,SG);$("rows").innerHTML="";o.items.forEach(function(i){addRow(i.d,i.q,i.r)});theme();pay();calc();growAll()}
+var o={id:editId||String(Date.now()),cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig,items:it,total:calc().g,mode:docMode,font:docFont,letterText:$("letterText").value};PF.concat(IF).forEach(function(i){o[i]=$(i).value});return o}
+function load(o){editId=o.id;PF.concat(IF).forEach(function(i){$(i).value=o[i]||""});$("letterText").value=o.letterText||"";$("cur").value=o.cur;$("theme").value=o.theme;$("pm").value=o.pm;logo=o.logo||"";sig=o.sig||"";if(o.mode)setMode(o.mode);if(o.font)setFont(o.font);show($("lg"),logo,LG);show($("sg"),sig,SG);$("rows").innerHTML="";(o.items||[]).forEach(function(i){addRow(i.d,i.q,i.r)});if(!o.items||!o.items.length)addRow("",1,0);theme();pay();calc();growAll()}
 $("add").onclick=function(){addRow("",1,0)};
-$("save").onclick=function(){var o=snap(),h=store.get("inv_hist",[]),i=h.findIndex(function(x){return x.id==o.id});if(i>=0)h[i]=o;else{h.unshift(o);editId=o.id}if(store.set("inv_hist",h))toast("Invoice saved")};
+$("save").onclick=function(){var o=snap(),h=store.get("inv_hist",[]),i=h.findIndex(function(x){return x.id==o.id});if(i>=0)h[i]=o;else{h.unshift(o);editId=o.id}if(store.set("inv_hist",h)){toast((docMode==="quote"?"Quote":docMode==="letterpad"?"Letterpad":"Invoice")+" saved");if(window.parent!==window)window.parent.postMessage({source:"invoice-generator",type:"document-saved",document:o,mode:docMode},window.location.origin)}};
 $("new").onclick=reset;
 $("pdf").onclick=async function(){var name=($("no").value||"invoice")+".pdf";
 try{toast("Preparing PDF...");
@@ -167,5 +174,8 @@ $("xl").onclick=function(){var h=store.get("inv_hist",[]),rows=[];if(!h.length){
 h.forEach(function(o){o.items.forEach(function(i){rows.push({Invoice:o.no,Issued:o.d1,Due:o.d2,Client:o.cn,Currency:o.cur,Item:i.d,Qty:i.q,Rate:i.r,Amount:i.q*i.r,"Tax %":o.tx,"Discount %":o.ds,"Grand Total":o.total,Paid:o.pd})})});
 if(!window.XLSX){toast("Excel library failed to load");return}
 (async function(){try{var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"Invoices");var buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});if(!(await saveFile("invoices.xlsx",buf)))XLSX.writeFile(wb,"invoices.xlsx")}catch(e){toast("Excel export failed")}})()};
-profile();reset();
+function setMode(mode){if(["invoice","quote","letterpad"].indexOf(mode)<0)return;docMode=mode;document.body.setAttribute("data-doc-mode",mode);$("doc-number-label").textContent=mode==="quote"?"＃ Quote #:":"＃ Invoice #:";$("save").textContent=mode==="quote"?"💾 Save Quote":mode==="letterpad"?"💾 Save Letterpad":"💾 Save Invoice";$("hist").querySelector("h3").textContent=mode==="quote"?"Quote History":mode==="letterpad"?"Letterpad History":"Invoice History";document.title=mode==="quote"?"Quote Generator":mode==="letterpad"?"Letterpad":"Invoice Generator"}
+function setFont(font){if(!FONT_MAP[font])return;docFont=font;$("sheet").style.fontFamily=FONT_MAP[font]}
+window.addEventListener("message",function(event){if(event.source!==window.parent||event.origin!==window.location.origin)return;var data=event.data;if(!data||data.source!=="invoice-host")return;if(data.type==="settings"){setMode(data.mode);setFont(data.font)}else if(data.type==="load-document"&&data.document&&typeof data.document==="object")load(data.document);else if(data.type==="get-client"){window.parent.postMessage({source:"invoice-generator",type:"client-data",client:{name:$("cn").value,address:$("cc").value,phone:$("ct").value}},window.location.origin)}else if(data.type==="fill-client"&&data.client){$("cn").value=data.client.name||"";$("cc").value=data.client.address||"";$("ct").value=data.client.phone||"";growAll()}});
+profile();reset();if(window.parent!==window)window.parent.postMessage({source:"invoice-generator",type:"ready"},window.location.origin);
 </script></body></html>
