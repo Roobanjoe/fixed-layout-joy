@@ -112,6 +112,9 @@ function InvoiceStudio() {
   const [clients, setClients] = useState<SavedClient[]>([]);
   const [records, setRecords] = useState<InvoiceRecord[]>([]);
   const [dialog, setDialog] = useState<"auth" | "history" | null>(null);
+  const [clientDialogOpen, setClientDialogOpen] = useState(false);
+  const [clientDraft, setClientDraft] = useState<ClientFields>({ name: "", address: "", phone: "" });
+  const [savingClient, setSavingClient] = useState(false);
   const [authMode, setAuthMode] = useState<"sign-in" | "create">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -227,32 +230,7 @@ function InvoiceStudio() {
         void persistDocument(event.data);
       } else if (event.data.type === "client-data" && waitingForClient.current) {
         waitingForClient.current = false;
-        if (!session?.user.id) {
-          setNotice("Sign in to save clients to your account.");
-          return;
-        }
-        if (!event.data.client.name.trim()) {
-          setNotice("Add a client name before saving.");
-          return;
-        }
-        void supabase
-          .from("saved_clients")
-          .insert({
-            user_id: session.user.id,
-            name: event.data.client.name.trim(),
-            company_address: event.data.client.address.trim(),
-            contact_number: event.data.client.phone.trim(),
-          })
-          .select()
-          .single()
-          .then(({ data: savedClient, error }) => {
-            if (error) {
-              setNotice(error.message);
-              return;
-            }
-            setClients((current) => [...current, savedClient].sort((a, b) => a.name.localeCompare(b.name)));
-            setNotice("Client saved to your account.");
-          });
+        setClientDraft(event.data.client);
       }
     };
     window.addEventListener("message", onMessage);
@@ -351,8 +329,41 @@ function InvoiceStudio() {
       setDialog("auth");
       return;
     }
+    setClientDraft({ name: "", address: "", phone: "" });
+    setClientDialogOpen(true);
     waitingForClient.current = true;
     sendToInvoice({ source: "invoice-host", type: "get-client" });
+  }
+
+  async function submitClient(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const userId = session?.user.id;
+    if (!userId) {
+      setClientDialogOpen(false);
+      setDialog("auth");
+      return;
+    }
+    setSavingClient(true);
+    try {
+      const { data, error } = await supabase
+        .from("saved_clients")
+        .insert({
+          user_id: userId,
+          name: clientDraft.name.trim(),
+          company_address: clientDraft.address.trim(),
+          contact_number: clientDraft.phone.trim(),
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      setClients((current) => [...current, data].sort((a, b) => a.name.localeCompare(b.name)));
+      setClientDialogOpen(false);
+      setNotice("Client saved to your account. Choose it from the saved-client list.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Couldn't save this client.");
+    } finally {
+      setSavingClient(false);
+    }
   }
 
   function chooseClient(clientId: string) {
@@ -418,15 +429,13 @@ function InvoiceStudio() {
             </SelectContent>
           </Select>
           <Select
-            value="none"
             onValueChange={chooseClient}
             disabled={!session || clients.length === 0}
           >
             <SelectTrigger className="h-8 min-w-[142px] flex-1 bg-background text-xs sm:flex-none sm:w-[190px]" aria-label="Select a saved client">
-              <SelectValue placeholder={session ? "Choose saved client" : "Sign in for clients"} />
+              <SelectValue placeholder={!session ? "Sign in for clients" : clients.length ? "Choose saved client" : "No saved clients yet"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">Choose saved client</SelectItem>
               {clients.map((client) => (
                 <SelectItem key={client.id} value={client.id}>
                   {client.name}
@@ -434,7 +443,7 @@ function InvoiceStudio() {
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={saveCurrentClient} disabled={!session}>
+          <Button variant="outline" size="sm" onClick={saveCurrentClient}>
             <Save aria-hidden="true" /> Save client
           </Button>
         </div>
@@ -452,6 +461,35 @@ function InvoiceStudio() {
         title="Invoice generator"
         onLoad={() => sendToInvoice({ source: "invoice-host", type: "settings", mode, font })}
       />
+
+      <Dialog open={clientDialogOpen} onOpenChange={(open) => {
+        setClientDialogOpen(open);
+        if (!open) waitingForClient.current = false;
+      }}>
+        <DialogContent className="dark border-border bg-card text-card-foreground sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Save client</DialogTitle>
+            <DialogDescription>Review the details, then save them for your next invoice.</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={(event) => void submitClient(event)}>
+            <div className="space-y-2">
+              <Label htmlFor="client-name">Client name</Label>
+              <Input id="client-name" autoComplete="organization" required value={clientDraft.name} onChange={(event) => setClientDraft((current) => ({ ...current, name: event.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="client-address">Company / address</Label>
+              <Input id="client-address" autoComplete="street-address" value={clientDraft.address} onChange={(event) => setClientDraft((current) => ({ ...current, address: event.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="client-phone">Contact number</Label>
+              <Input id="client-phone" type="tel" autoComplete="tel" value={clientDraft.phone} onChange={(event) => setClientDraft((current) => ({ ...current, phone: event.target.value }))} />
+            </div>
+            <Button className="w-full" type="submit" disabled={savingClient}>
+              {savingClient ? "Saving…" : "Save client"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={dialog === "auth"} onOpenChange={(open) => setDialog(open ? "auth" : null)}>
         <DialogContent className="dark border-border bg-card text-card-foreground sm:max-w-sm">
