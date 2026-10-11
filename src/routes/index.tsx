@@ -69,13 +69,13 @@ function isDocumentMode(value: unknown): value is DocumentMode {
 }
 
 function isInvoiceMessage(value: unknown): value is InvoiceMessage {
-  if (!isRecord(value) || value.source !== "invoice-generator") return false;
-  if (value.type === "ready") return true;
-  if (value.type === "document-saved") {
-    return isRecord(value.document) && isDocumentMode(value.mode);
+  if (!isRecord(value) || value["source"] !== "invoice-generator") return false;
+  if (value["type"] === "ready") return true;
+  if (value["type"] === "document-saved") {
+    return isRecord(value["document"]) && isDocumentMode(value["mode"]);
   }
-  if (value.type === "client-data" && isRecord(value.client)) {
-    return [value.client.name, value.client.address, value.client.phone].every(
+  if (value["type"] === "client-data" && isRecord(value["client"])) {
+    return [value["client"]["name"], value["client"]["address"], value["client"]["phone"]].every(
       (field) => typeof field === "string",
     );
   }
@@ -182,8 +182,8 @@ function InvoiceStudio() {
       }
       const document = message.document;
       const title = [
-        typeof document.no === "string" ? document.no : "",
-        typeof document.cn === "string" ? document.cn : "",
+        typeof document["no"] === "string" ? document["no"] : "",
+        typeof document["cn"] === "string" ? document["cn"] : "",
       ]
         .filter(Boolean)
         .join(" · ") || (message.mode === "quote" ? "Quote" : "Untitled document");
@@ -211,8 +211,9 @@ function InvoiceStudio() {
         setNotice("That saved document is no longer available. Save again to create a new copy.");
         return;
       }
-      selectedRecordId.current = result.data.id;
-      setRecords((current) => [result.data, ...current.filter((item) => item.id !== result.data.id)]);
+      const savedRecord = result.data;
+      selectedRecordId.current = savedRecord.id;
+      setRecords((current) => [savedRecord, ...current.filter((item) => item.id !== savedRecord.id)]);
       setNotice("Saved to your account.");
     },
     [session?.user.id],
