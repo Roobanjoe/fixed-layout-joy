@@ -164,8 +164,8 @@ var cv=await html2canvas($("sheet"),{scale:2,backgroundColor:"#ffffff",useCORS:t
 var J=window.jspdf.jsPDF,pdf=new J({unit:"pt",format:"a4"}),W=pdf.internal.pageSize.getWidth(),H=pdf.internal.pageSize.getHeight(),m=24,w=W-2*m,h=cv.height*w/cv.width;
 if(h>H-2*m){h=H-2*m;w=cv.width*h/cv.height}
 pdf.addImage(cv.toDataURL("image/jpeg",0.95),"JPEG",(W-w)/2,m,w,h);
-if(!(await saveFile(name,pdf.output("blob")))){document.title=$("no").value||"Invoice";window.print()}
-}catch(e){toast("PDF failed, trying print");try{window.print()}catch(x){}}};
+if(!(await saveFile(name,pdf.output("blob"))))pdf.save(name)
+}catch(e){toast("PDF could not be prepared")}};
 $("wa").onclick=function(){var c=calc(),m="*Invoice "+$("no").value+"*\nFrom: "+$("bn").value+"\nTo: "+$("cn").value+"\nDate: "+$("d1").value+($("d2").value?"\nDue: "+$("d2").value:"")+"\nTotal: "+money(c.g)+"\nBalance Due: "+money(c.b);
 if($("pm").value.indexOf("UPI")==0&&$("up").value)m+="\nUPI: "+$("up").value;window.open("https://wa.me/?text="+encodeURIComponent(m),"_blank")};
 function hist(){var h=store.get("inv_hist",[]),l=$("hl");l.innerHTML=h.length?"":"<p>No saved invoices yet.</p>";
