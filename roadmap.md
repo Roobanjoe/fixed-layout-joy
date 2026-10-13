@@ -6,3 +6,4 @@
 - [x] Download the generated PDF directly so browser print headers and footers are excluded.
 - [ ] Add AI-generated polished line-item descriptions from rough notes for invoices and quotes.
 - [ ] Verify the main preview, sign-in surfaces, persistence wiring, and build diagnostics.
+- [ ] Add selectable PDF-only invoice details without changing the on-screen invoice layout.
