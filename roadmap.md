@@ -7,3 +7,4 @@
 - [ ] Add AI-generated polished line-item descriptions from rough notes for invoices and quotes.
 - [ ] Verify the main preview, sign-in surfaces, persistence wiring, and build diagnostics.
 - [ ] Add selectable PDF-only invoice details without changing the on-screen invoice layout.
+- [x] Replace the footer location field with a website field, remove the dotted logo frame, and add logo fit/fill/crop/scale controls.

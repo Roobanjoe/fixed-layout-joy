@@ -19,6 +19,14 @@ button,select{font:inherit;font-size:12px;font-weight:600;border:1px solid var(-
 #pdf-options summary{list-style:none;font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;padding:7px 11px;cursor:pointer;white-space:nowrap}
 #pdf-options summary::-webkit-details-marker{display:none}
 #pdf-options[open] .pdf-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:11;width:min(320px,calc(100vw - 24px));max-height:70vh;overflow:auto;padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #0f172a22;text-align:left}
+#logo-options{position:relative;font-size:12px}
+#logo-options summary{list-style:none;font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;padding:7px 11px;cursor:pointer;white-space:nowrap}
+#logo-options summary::-webkit-details-marker{display:none}
+#logo-options[open] .logo-menu{position:absolute;top:calc(100% + 6px);left:0;z-index:11;width:min(280px,calc(100vw - 24px));padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #0f172a22;text-align:left}
+.logo-menu label{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px;font-weight:500}
+.logo-menu select{min-width:125px}
+.logo-menu input[type=range]{width:130px;accent-color:var(--ac)}
+.logo-menu button{margin-top:6px}
 .pdf-menu fieldset{border:0;border-top:1px solid var(--line);padding:8px 0 0;margin:8px 0 0}
 .pdf-menu legend{padding:0 6px 0 0;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase}
 .pdf-menu label{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;font-weight:500;cursor:pointer}
@@ -35,8 +43,8 @@ body[data-doc-mode="letterpad"] .mid,body[data-doc-mode="letterpad"] .tbl,body[d
 body[data-doc-mode="letterpad"] .letterpad-body{display:block}
 body[data-doc-mode="quote"] .pay{display:none}
 body[data-doc-mode="quote"] .bt .tot{flex:0 1 360px;margin-left:auto}
-.logo{width:100px;height:78px;flex:none;border:1.5px dashed #cbd5e1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;overflow:hidden;font-size:9px;font-weight:600;color:#64748b;background:#f8fafc}
-.logo img{max-width:100%;max-height:100%}
+.logo{width:100px;height:78px;flex:none;border:0;border-radius:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;overflow:hidden;font-size:9px;font-weight:600;color:#64748b;background:transparent}
+.logo img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
 .co{flex:1;text-align:right}.co input,.co textarea{text-align:right}
 #bn{font-size:20px;font-weight:800;color:#9ca3af}#ba{font-size:10.5px;color:#94a3b8;line-height:1.9}
 .mid{display:flex;justify-content:space-between;gap:16px;margin-top:34px}
@@ -81,6 +89,13 @@ body.cap .del,body.cap .addb,body.cap .logo:not(:has(img)),body.cap .sig:not(:ha
 <select id="cur"></select>
 <select id="theme"><option value="#059669">🟢 Green Theme</option><option value="#2563eb">🔵 Blue Theme</option><option value="#b8860b">🟤 Gold Theme</option><option value="#dc2626">🔴 Red Theme</option><option value="#7c3aed">🟣 Purple Theme</option><option value="#111827">⚫ Black Theme</option></select>
 <button id="hbtn">🕘 History</button>
+<details id="logo-options"><summary>Logo ▾</summary><div class="logo-menu">
+<label for="logo-mode">Display<select id="logo-mode"><option value="fit">Fit</option><option value="fill">Fill / crop</option></select></label>
+<label for="logo-scale">Scale<input id="logo-scale" type="range" min="50" max="200" value="100"><span id="logo-scale-value">100%</span></label>
+<label for="logo-x">Horizontal crop<input id="logo-x" type="range" min="0" max="100" value="50"></label>
+<label for="logo-y">Vertical crop<input id="logo-y" type="range" min="0" max="100" value="50"></label>
+<button id="logo-reset" type="button">Reset logo view</button>
+</div></details>
 <details id="pdf-options"><summary>PDF details ▾</summary><div class="pdf-menu">
 <fieldset><legend>Business &amp; client</legend>
 <label><input type="checkbox" data-pdf-option="logo" checked>Business logo</label>
@@ -136,7 +151,7 @@ body.cap .del,body.cap .addb,body.cap .logo:not(:has(img)),body.cap .sig:not(:ha
 
 <div class="sigw" data-pdf-detail="signature"><div class="sigb"><label class="sig" id="sg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M12 20h9M16.5 3.5l4 4L8 20l-5 1 1-5z"/></svg><span>Upload Signature</span></label><input type="file" id="sgf" accept="image/*" hidden><hr><b>Authorized Signatory</b></div></div>
 
-<div class="ft" data-pdf-detail="contact-details"><label><span class="i">📞</span><input id="fp"></label><label><span class="i">✉️</span><input id="fe"></label><label><span class="i">📍</span><input id="fl"></label></div>
+<div class="ft" data-pdf-detail="contact-details"><label><span class="i">📞</span><input id="fp" placeholder="Phone"></label><label><span class="i">✉️</span><input id="fe" placeholder="Email"></label><label><span class="i">🌐</span><input id="fw" type="url" placeholder="Website"></label></div>
 </div>
 
 <div class="acts"><button id="save" style="background:#1e293b">💾 Save Invoice</button><button id="pdf" style="background:var(--ac)">📄 Download PDF / Print</button><button id="wa" style="background:#10b981">💬 Send on WhatsApp</button><button id="new" style="background:#64748b">＋ Create New</button></div>
@@ -150,9 +165,9 @@ var $=function(i){return document.getElementById(i)};
 var SY={INR:"₹",USD:"$",EUR:"€",GBP:"£",JPY:"¥"};
 ["INR","USD","EUR","GBP","AED","SAR","JPY","CAD","AUD","BDT","PKR","ZAR","SEK","CHF","CNY","HKD","SGD","MYR","THB","IDR","PHP","VND","KWD","OMR","BHD"].forEach(function(c){var o=document.createElement("option");o.value=c;o.textContent=(SY[c]?SY[c]+" ":"")+c;$("cur").appendChild(o)});
 var store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast("Storage unavailable");return false}}};
-var logo="",sig="",editId=null,docMode="invoice",docFont="Inter, sans-serif";
+var logo="",sig="",logoView={mode:"fit",scale:100,x:50,y:50},editId=null,docMode="invoice",docFont="Inter, sans-serif";
 var FONT_MAP={"Arial, sans-serif":"Arial, sans-serif","Inter, sans-serif":"Inter, sans-serif","Helvetica, sans-serif":"Helvetica, sans-serif","Georgia, serif":"Georgia, serif","'Times New Roman', serif":"'Times New Roman', serif","'Courier New', monospace":"'Courier New', monospace","'Trebuchet MS', sans-serif":"'Trebuchet MS', sans-serif","Verdana, sans-serif":"Verdana, sans-serif","Garamond, serif":"Garamond, serif","'Palatino Linotype', serif":"'Palatino Linotype', serif"};
-var PF=["bn","ba","bk","ac","if","up","pt","fp","fe","fl"],IF=["no","d1","d2","cn","cc","ct","tx","ds","pd"];
+var PF=["bn","ba","bk","ac","if","up","pt","fp","fe","fw"],IF=["no","d1","d2","cn","cc","ct","tx","ds","pd"];
 var SAMPLE={bn:"Acme Corporation Ltd.",ba:"123 Business Avenue, Tech Park\nMumbai, Maharashtra 400001\nPh: +91 98765 43210",bk:"State Bank of India",ac:"0000123456789",if:"SBIN0001234",fp:"+91 98765 43210",fe:"billing@acmecorp.com",fl:"Mumbai, India"};
 function toast(m){var t=$("toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none"},1800)}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
@@ -176,7 +191,11 @@ $("theme").onchange=theme;
 function pay(){var v=$("pm").value;$("pbank").style.display=v=="Bank Transfer"?"":"none";$("pupi").style.display=v.indexOf("UPI")==0?"":"none";$("pcash").style.display=v.indexOf("Cash")==0?"":"none"}
 $("pm").onchange=pay;
 function pick(inp,box,ph,set){inp.onchange=function(){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){set(r.result);show(box,r.result,ph)};r.readAsDataURL(f)}}
-function show(box,src,ph){if(src)box.innerHTML='<img src="'+src+'">';else box.innerHTML=ph}
+function show(box,src,ph){if(src)box.innerHTML='<img src="'+src+'">';else box.innerHTML=ph;if(box===$("lg"))applyLogoView()}
+function applyLogoView(){var img=$("lg").querySelector("img");if(!img)return;img.style.objectFit=logoView.mode==="fill"?"cover":"contain";img.style.objectPosition=logoView.x+"% "+logoView.y+"%";img.style.transform="scale("+(logoView.scale/100)+")";$ ("logo-mode").value=logoView.mode;$ ("logo-scale").value=logoView.scale;$ ("logo-scale-value").textContent=logoView.scale+"%";$ ("logo-x").value=logoView.x;$ ("logo-y").value=logoView.y}
+function readLogoControls(){logoView={mode:$("logo-mode").value,scale:Number($("logo-scale").value),x:Number($("logo-x").value),y:Number($("logo-y").value)};applyLogoView()}
+$("logo-mode").onchange=readLogoControls;["logo-scale","logo-x","logo-y"].forEach(function(id){$(id).oninput=readLogoControls});
+$("logo-reset").onclick=function(){logoView={mode:"fit",scale:100,x:50,y:50};applyLogoView()};
 var LG=$("lg").innerHTML,SG=$("sg").innerHTML;
 $("lg").onclick=function(e){e.preventDefault();$("lgf").click()};$("sg").onclick=function(e){e.preventDefault();$("sgf").click()};
 pick($("lgf"),$("lg"),LG,function(v){logo=v});pick($("sgf"),$("sg"),SG,function(v){sig=v});
@@ -185,11 +204,11 @@ function today(){return new Date().toISOString().slice(0,10)}
 function nextNo(){return (docMode==="quote"?"QUO-":"INV-")+String(store.get("inv_hist",[]).length+1).padStart(3,"0")}
 function reset(){editId=null;["cn","cc","ct","tx","ds","pd"].forEach(function(i){$(i).value=""});$("tx").value=0;$("ds").value=0;$("pd").value=0;$("rows").innerHTML="";addRow("Website Development",1,15000);$("no").value=nextNo();$("d1").value=today();$("d2").value="";calc();growAll()}
 function profile(){var p=store.get("inv_prof",null)||Object.assign({cur:"INR",theme:"#059669",pm:"Bank Transfer"},SAMPLE);
-PF.forEach(function(i){$(i).value=p[i]||""});$("cur").value=p.cur||"INR";$("theme").value=p.theme||"#059669";$("pm").value=p.pm||"Bank Transfer";logo=p.logo||"";sig=p.sig||"";show($("lg"),logo,LG);show($("sg"),sig,SG);theme();pay()}
-$("prof").onclick=function(){var p={cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig};PF.forEach(function(i){p[i]=$(i).value});if(store.set("inv_prof",p))toast("Profile saved")};
+PF.forEach(function(i){$(i).value=p[i]||""});$("cur").value=p.cur||"INR";$("theme").value=p.theme||"#059669";$("pm").value=p.pm||"Bank Transfer";logo=p.logo||"";sig=p.sig||"";logoView=p.logoView||{mode:"fit",scale:100,x:50,y:50};show($("lg"),logo,LG);show($("sg"),sig,SG);theme();pay()}
+$("prof").onclick=function(){var p={cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig,logoView:logoView};PF.forEach(function(i){p[i]=$(i).value});if(store.set("inv_prof",p))toast("Profile saved")};
 function snap(){var it=[];document.querySelectorAll("#rows tr").forEach(function(tr){it.push({d:tr.querySelector(".d").value,q:num(tr.querySelector(".q").value),r:num(tr.querySelector(".r").value)})});
-var o={id:editId||String(Date.now()),cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,sig:sig,items:it,total:calc().g,mode:docMode,font:docFont,letterText:$("letterText").value};PF.concat(IF).forEach(function(i){o[i]=$(i).value});return o}
-function load(o){editId=o.id;PF.concat(IF).forEach(function(i){$(i).value=o[i]||""});$("letterText").value=o.letterText||"";$("cur").value=o.cur;$("theme").value=o.theme;$("pm").value=o.pm;logo=o.logo||"";sig=o.sig||"";if(o.mode)setMode(o.mode);if(o.font)setFont(o.font);show($("lg"),logo,LG);show($("sg"),sig,SG);$("rows").innerHTML="";(o.items||[]).forEach(function(i){addRow(i.d,i.q,i.r)});if(!o.items||!o.items.length)addRow("",1,0);theme();pay();calc();growAll()}
+var o={id:editId||String(Date.now()),cur:$("cur").value,theme:$("theme").value,pm:$("pm").value,logo:logo,logoView:logoView,sig:sig,items:it,total:calc().g,mode:docMode,font:docFont,letterText:$("letterText").value};PF.concat(IF).forEach(function(i){o[i]=$(i).value});return o}
+function load(o){editId=o.id;PF.concat(IF).forEach(function(i){$(i).value=o[i]||""});$("letterText").value=o.letterText||"";$("cur").value=o.cur;$("theme").value=o.theme;$("pm").value=o.pm;logo=o.logo||"";sig=o.sig||"";logoView=o.logoView||{mode:"fit",scale:100,x:50,y:50};if(o.mode)setMode(o.mode);if(o.font)setFont(o.font);show($("lg"),logo,LG);show($("sg"),sig,SG);$("rows").innerHTML="";(o.items||[]).forEach(function(i){addRow(i.d,i.q,i.r)});if(!o.items||!o.items.length)addRow("",1,0);theme();pay();calc();growAll()}
 $("add").onclick=function(){addRow("",1,0)};
 $("save").onclick=function(){var o=snap(),h=store.get("inv_hist",[]),i=h.findIndex(function(x){return x.id==o.id});if(i>=0)h[i]=o;else{h.unshift(o);editId=o.id}if(store.set("inv_hist",h)){toast((docMode==="quote"?"Quote":docMode==="letterpad"?"Letterpad":"Invoice")+" saved");if(window.parent!==window)window.parent.postMessage({source:"invoice-generator",type:"document-saved",document:o,mode:docMode},window.location.origin)}};
 $("new").onclick=reset;
